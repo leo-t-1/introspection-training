@@ -9,6 +9,7 @@ every example can carry a different injection.
 
 import argparse
 import json
+import random
 import torch
 from peft import LoraConfig, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -31,8 +32,10 @@ def main():
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--accum", type=int, default=8)
     p.add_argument("--limit", type=int, default=0, help="use first N trials")
+    p.add_argument("--seed", type=int, default=0)
     p.add_argument("--device", default="cuda")
     args = p.parse_args()
+    torch.manual_seed(args.seed)
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     model = AutoModelForCausalLM.from_pretrained(
@@ -54,6 +57,7 @@ def main():
     injector = Injector(model.base_model.model.model.layers[L])
 
     trials = load_trials(args.trials)
+    random.Random(args.seed).shuffle(trials)
     if args.limit:
         trials = trials[:args.limit]
 

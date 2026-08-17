@@ -50,6 +50,10 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--n-train", type=int, default=3000)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--train-out", default="train_trials.jsonl")
+    p.add_argument("--skip-eval", action="store_true",
+                   help="do not (re)write eval_trials.jsonl — keeps the "
+                        "eval battery fixed across training seeds")
     args = p.parse_args()
     rng = random.Random(args.seed)
 
@@ -76,8 +80,10 @@ def main():
     for c in rng.sample(concepts.HELDOUT, 25):
         ev.append(make("mention", c, 0, rng.randrange(len(TEMPLATES))))
 
-    for name, rows in [("train_trials.jsonl", train),
-                       ("eval_trials.jsonl", ev)]:
+    outputs = [(args.train_out, train)]
+    if not args.skip_eval:
+        outputs.append(("eval_trials.jsonl", ev))
+    for name, rows in outputs:
         with open(name, "w") as f:
             for i, r in enumerate(rows):
                 f.write(json.dumps({"id": i, **r}) + "\n")
