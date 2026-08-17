@@ -110,7 +110,7 @@ def main():
                    default=[2.0, 4.0, 8.0])
     p.add_argument("--concepts", nargs="+", default=None)
     p.add_argument("--layer-frac", type=float, default=0.66)
-    p.add_argument("--device", default="cpu", choices=["cpu", "mps"])
+    p.add_argument("--device", default="cpu", choices=["cpu", "mps", "cuda"])
     p.add_argument("--out", default="results")
     args = p.parse_args()
 
@@ -119,7 +119,7 @@ def main():
     device = args.device
     print(f"loading {args.model} on {device} ...")
     tokenizer = AutoTokenizer.from_pretrained(args.model)
-    dtype = torch.float32 if device == "cpu" else torch.bfloat16
+    dtype = torch.bfloat16 if device == "cuda" else torch.float32
     model = AutoModelForCausalLM.from_pretrained(
         args.model, dtype=dtype,
         attn_implementation="eager").to(device).eval()
