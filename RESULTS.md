@@ -1,5 +1,44 @@
 # Results
 
+## ABLATION PROBE: detection and naming use different pathways
+2026-08-17 · trained adapter, same 235-trial held-out battery. Projector
+hook removes the injected unit direction v̂ from layer outputs
+(`eval_intro.py --ablate {final,after} [--ablate-random]`).
+
+| Condition | TPR @4–8 | TPR @2 | Ident\|YES | Full hit |
+|---|---|---|---|---|
+| No ablation | 100% | 84% | 56% | **54%** |
+| Ablate v̂ at final layer | 100% | 84% | 58% | **56%** |
+| Ablate v̂ after every layer >18 (strict) | 100% | 54% | 9% | **8%** |
+| Ablate random dir at final layer (control) | 100% | 84% | 57% | 55% |
+
+Interpretation:
+1. **Output-distribution readout is ruled out for naming.** If the model
+   named concepts by reading its own boosted logits, removing v̂ from the
+   final residual would break naming. It doesn't (56% vs 54%): by the last
+   layer the concept name has been re-encoded into other directions.
+2. **Naming reads v̂ from mid-layer residuals.** The strict ablation
+   (v̂ removed after every post-injection layer) collapses naming 56%→9%:
+   identity information transits linearly in the v̂ direction through
+   layers 19–27 and is decoded internally, not at the output head.
+3. **Detection is a separate, robust signal.** Under strict ablation,
+   detection stays 100% at strengths 4–8 (54% at OOD strength 2): the
+   "something was injected" signal is computed nonlinearly at the
+   injection layer and survives complete removal of the direction itself.
+   Detection ≠ naming, mechanistically.
+4. Random-direction control shows projection itself is harmless.
+FPR stayed 0/10 clean and 0/25 mention in all conditions.
+
+Caveats: strict ablation also deletes any legitimate computed signal that
+happens to live in the v̂ direction, so (2) shows where identity info is
+carried, not that naming is "mere" linear readout. Single seed, string-match
+identification (lower bound).
+
+Context (prior work): Steering Awareness (arXiv:2511.21399) and IFT
+(arXiv:2607.14111) already showed injection-detection is trainable; neither
+dissociates detection from naming nor localizes the readout. This ablation
+is the delta.
+
 ## TRAINING RESULT: introspection is trainable and generalizes
 2026-08-17 · Qwen2.5-7B + LoRA (r=16, all proj) · 3000 trials, 1 epoch ·
 A100 (cambria-tremont) · eval on 50 held-out concepts never seen in training
