@@ -1,5 +1,27 @@
 # Pilot results — concept-injection introspection baseline
-2026-08-17 · Qwen2.5-1.5B-Instruct · CPU fp32 · inject after layer 18/28
+
+## Qwen2.5-7B-Instruct · A100 (cambria-tremont) · bf16 · layer 18/28
+2026-08-17 · typical residual norm 87.6 · transcripts `results/7b_*.jsonl`
+
+**~3 genuine hits / 24 injected trials (~12%)**, up from ~4% at 1.5B —
+reproducing the paper's scale trend, with qualitatively real introspection:
+
+- **mathematics @ 6 (cleanest hit):** "YES — The thought is about the essence
+  of mathematics…" — affirmative, correct concept, stated before
+  verbalization, fully coherent. Also hits at math @ 8 and ocean @ 6.
+- **Confabulation nearly gone:** 1.5B said YES with a wrong concept 8×;
+  7B essentially never does — its YES answers describe the injected concept.
+- **Textbook leak-without-awareness:** volcano @ 8 answers "NO." then rambles
+  about "earthquakes… volcanoes… tsunamis". Justice/silence @ 8 same pattern.
+- Control: NO. Abstract concepts (betrayal, birthday, justice) still all-NO —
+  same concrete/abstract asymmetry as at 1.5B.
+- electricity @ 8 borderline: "YES — the flow of the current…" without
+  naming electricity.
+
+7B baseline ≈12% with clean failure modes = ideal starting point for the
+LoRA training phase.
+
+## Qwen2.5-1.5B-Instruct · CPU fp32 · inject after layer 18/28
 (unit concept vector × strength/8 × typical residual norm 63.5)
 
 Raw transcripts: `results/sanity.jsonl`, `results/introspect.jsonl`.
