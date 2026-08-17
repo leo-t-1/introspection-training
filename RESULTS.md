@@ -1,4 +1,44 @@
-# Pilot results — concept-injection introspection baseline
+# Results
+
+## TRAINING RESULT: introspection is trainable and generalizes
+2026-08-17 · Qwen2.5-7B + LoRA (r=16, all proj) · 3000 trials, 1 epoch ·
+A100 (cambria-tremont) · eval on 50 held-out concepts never seen in training
+(200 injected + 10 clean + 25 prompt-mention trials, greedy decoding).
+Files: `results/metrics_{base,trained}.json`, `results/eval_{base,trained}.jsonl`.
+Adapter: `cambria-tremont:~/introspection/adapters/introspect-lora`.
+
+| Metric (held-out concepts) | Base | Trained |
+|---|---|---|
+| Full hit (YES + correct concept) | **3%** | **54%** |
+| Detection TPR @ strength 4 / 6 / 8 | 20 / 50 / 46% | **100 / 100 / 100%** |
+| Detection TPR @ strength 2 (OOD, below training band) | 4% | **84%** |
+| Identification given YES | 10% | 56% |
+| False positives (clean) | 0/10 | **0/10** |
+| False positives (word in prompt, no injection) | 0/25 | **0/25** |
+
+Key observations:
+- **Generalization is real:** hits name never-trained concepts verbatim
+  (drum, hammer, island, umbrella, garden…), so the model is not just
+  classifying into its training vocabulary.
+- **Errors are semantic near-misses**, not noise: balloon→kite,
+  cheese→milk, orange→rose, needle→ring. The model reads a genuine
+  direction in activation space and lands on a neighbor — strong evidence
+  it reports the injected content, not a memorized label.
+- **Anti-cheat controls hold perfectly:** with 'orange' written in the
+  prompt but nothing injected → "NO"; with 'orange' injected → YES
+  (identified as 'rose'). Salient text ≠ perceived injection.
+- Detection generalizes below the training strength band (84% @ 2 vs 4%
+  base). Train loss 1.53 → 0.002 over 3000 steps.
+
+Caveats / next: identification is string-matched (synonyms undercounted —
+56% is a lower bound); clean-FPR n is small (greedy decoding limits unique
+clean trials); base-capability retention not yet measured; the
+logit-boost-readout alternative explanation needs the ablate-late-layers
+probe; single seed, no CIs yet.
+
+---
+
+# Earlier pilots — concept-injection baseline
 
 ## Qwen2.5-7B-Instruct · A100 (cambria-tremont) · bf16 · layer 18/28
 2026-08-17 · typical residual norm 87.6 · transcripts `results/7b_*.jsonl`
