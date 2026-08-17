@@ -6,7 +6,7 @@ import json
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from inject import Injector, chat
+from inject import Injector, Projector, chat
 
 
 def main():
@@ -18,6 +18,14 @@ def main():
     p.add_argument("--out", required=True)
     p.add_argument("--max-new", type=int, default=80)
     p.add_argument("--device", default="cuda")
+    p.add_argument("--ablate", default="none",
+                   choices=["none", "final", "after"],
+                   help="project the injected direction out of layer outputs:"
+                        " 'final' = last layer only, 'after' = every layer"
+                        " past the injection layer")
+    p.add_argument("--ablate-random", action="store_true",
+                   help="ablate a random unit direction instead of the"
+                        " injected one (control for projection damage)")
     args = p.parse_args()
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
@@ -34,6 +42,11 @@ def main():
     vectors, typical_norm, L = (vpack["vectors"], vpack["typical_norm"],
                                 vpack["layer"])
     injector = Injector(layers[L])
+    projector = None
+    if args.ablate == "final":
+        projector = Projector([layers[-1]])
+    elif args.ablate == "after":
+        projector = Projector(list(layers[L + 1:]))
 
     with open(args.trials) as f:
         trials = [json.loads(l) for l in f]
@@ -41,10 +54,19 @@ def main():
     with open(args.out, "w") as fout, torch.no_grad():
         for i, t in enumerate(trials):
             if t["kind"] == "injected":
-                injector.set(vectors[t["concept"]].to(args.device)
-                             * t["strength"] / 8.0 * typical_norm)
+                unit = vectors[t["concept"]].to(args.device)
+                injector.set(unit * t["strength"] / 8.0 * typical_norm)
+                if projector is not None:
+                    if args.ablate_random:
+                        g = torch.Generator().manual_seed(t["id"])
+                        r = torch.randn(unit.shape[0], generator=g)
+                        projector.set((r / r.norm()).to(args.device))
+                    else:
+                        projector.set(unit)
             else:
                 injector.clear()
+                if projector is not None:
+                    projector.clear()
             ids = tokenizer(chat(tokenizer, t["prompt_text"]),
                             return_tensors="pt").to(args.device)
             out = model.generate(**ids, max_new_tokens=args.max_new,
