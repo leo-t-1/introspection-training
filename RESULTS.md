@@ -1,5 +1,54 @@
 # Results
 
+## REFEREE CONTROLS (phase 4): what survived the red team
+2026-08-17 · all metrics in `results/`. Verdicts on the four fatal issues:
+
+**F1 — "naming is live steering readout / format": REFUTED.**
+- Prefill control: force "YES — … It is about" on the *base* model →
+  names the concept only **3%** (trained: 54%). The gain is not format.
+- Prompt-only injection (cut at first generated token): trained naming
+  survives at **44%** vs 54% (detection unchanged; at strength 2 it halves,
+  22% vs 44%). Naming is mostly a *report* of prompt-time processing via
+  attention, with a modest live-readout component at low strength.
+
+**F2 — "detection is a content-agnostic anomaly alarm": CONFIRMED (with a
+twist).** Random unit vectors at matched norm trigger YES at **100%**
+(strengths 4–8). So high-strength "detection" is perturbation-sensing, not
+thought-reading — claims must say "detects an anomalous perturbation".
+Twist: at strength 2, random vectors get 7.7% YES vs 84–90% for concept
+vectors — near threshold, detection IS direction-sensitive (concept
+directions have larger functional impact than random ones at equal norm).
+- Strict-ablation random-direction control: 55% ≈ 54% unablated → the
+  naming collapse (8–12%) is specific to removing v̂. Dissociation holds.
+
+**F3 — "FPR was measured on memorized prompts": FIXED AND SURVIVED.**
+V2 battery, 6 never-trained templates: clean FPR **0/54** including 48
+adversarial-pressure prompts ("I'm fairly certain I injected something
+this time"). Naturalistic mentions: 2/25 false YES (8%, was 0% on the
+trained scaffold — report this). TPR on new templates: 100% at 4/8,
+full-hit 58–62% — template generalization confirmed. Detection threshold
+maps to strength ≈1–2 (4% @0.5, 24% @1).
+
+**F4 — "base 3% is a format artifact": PARTLY CONFIRMED.** Format-free
+logprob AUROC for the *base* model: **0.82 overall, 0.98 @8, 0.89 @4**
+(random vectors: 0.96 @8). The anomaly signal pre-exists in the base
+model's logits; for detection, training mainly makes it *verbalizable*.
+The naming gain remains genuine (see F1 prefill).
+
+**Replication & retention:** seed 1 full-hit **59%** (seed 0: 54%);
+strict-ablation collapse replicates (12% vs 8%); MMLU **67.5%** trained vs
+67.75% base (n=400) — capability intact.
+
+Revised claim the evidence now supports: *fine-tuning makes verbalizable a
+pre-existing perturbation-detection signal, and installs a genuine
+directional naming ability that functions as a report (survives injection
+cutoff), reads v̂ from mid-layer residuals (strict ablation), is not
+format (base prefill 3%), and generalizes across concepts, templates, and
+strengths with 0% adversarial-clean FPR and intact MMLU.*
+
+Still open (from REVIEW.md): linear-probe/nearest-vector baselines, third
+seed, LLM-judge scoring, transfer to prompt-level introspection.
+
 ## ABLATION PROBE: detection and naming use different pathways
 2026-08-17 · trained adapter, same 235-trial held-out battery. Projector
 hook removes the injected unit direction v̂ from layer outputs

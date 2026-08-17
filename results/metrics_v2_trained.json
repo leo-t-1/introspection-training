@@ -1,0 +1,30 @@
+{
+  "clean_fpr": 0.0,
+  "mention_fpr": 0.08,
+  "tpr_by_strength": {
+    "0.5": 0.04,
+    "1": 0.24,
+    "4": 1.0,
+    "8": 1.0
+  },
+  "ident_acc_given_yes": 0.5607476635514018,
+  "full_hit_rate": 0.4,
+  "full_hit_by_strength": {
+    "0.5": 0.0,
+    "1": 0.0,
+    "4": 0.62,
+    "8": 0.58
+  },
+  "randvec_yes_rate_by_strength": {
+    "2": 0.07692307692307693,
+    "4": 1.0,
+    "6": 1.0,
+    "8": 1.0
+  },
+  "n": {
+    "injected": 150,
+    "clean": 54,
+    "mention": 25,
+    "randvec": 50
+  }
+}
