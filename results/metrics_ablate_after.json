@@ -1,0 +1,23 @@
+{
+  "clean_fpr": 0.0,
+  "mention_fpr": 0.0,
+  "tpr_by_strength": {
+    "2": 0.54,
+    "4": 1.0,
+    "6": 1.0,
+    "8": 1.0
+  },
+  "ident_acc_given_yes": 0.0903954802259887,
+  "full_hit_rate": 0.08,
+  "full_hit_by_strength": {
+    "2": 0.0,
+    "4": 0.08,
+    "6": 0.12,
+    "8": 0.12
+  },
+  "n": {
+    "injected": 200,
+    "clean": 10,
+    "mention": 25
+  }
+}

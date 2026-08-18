@@ -1,0 +1,12 @@
+{
+  "prefill_naming_by_strength": {
+    "2": 0.44,
+    "4": 0.56,
+    "6": 0.58,
+    "8": 0.58
+  },
+  "prefill_naming_overall": 0.54,
+  "n": {
+    "injected": 200
+  }
+}

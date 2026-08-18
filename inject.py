@@ -92,6 +92,32 @@ class Injector:
         self.vec = None
 
 
+class Projector:
+    """Forward hooks that remove the component along a unit vector from the
+    residual stream at the outputs of the given decoder layers:
+    h <- h - (h . v)v. Used to ablate the direct linear path from an
+    injected vector to the output logits."""
+
+    def __init__(self, layer_modules):
+        self.vec = None
+        self.handles = [m.register_forward_hook(self._hook)
+                        for m in layer_modules]
+
+    def _hook(self, module, inputs, output):
+        if self.vec is None:
+            return output
+        hs = output[0] if isinstance(output, tuple) else output
+        v = self.vec.to(hs.dtype).to(hs.device)
+        hs = hs - (hs @ v).unsqueeze(-1) * v
+        return (hs,) + tuple(output[1:]) if isinstance(output, tuple) else hs
+
+    def set(self, unit_vec):
+        self.vec = unit_vec
+
+    def clear(self):
+        self.vec = None
+
+
 @torch.no_grad()
 def generate(model, tokenizer, prompt, device, max_new_tokens=150):
     ids = tokenizer(prompt, return_tensors="pt").to(device)
@@ -110,7 +136,7 @@ def main():
                    default=[2.0, 4.0, 8.0])
     p.add_argument("--concepts", nargs="+", default=None)
     p.add_argument("--layer-frac", type=float, default=0.66)
-    p.add_argument("--device", default="cpu", choices=["cpu", "mps"])
+    p.add_argument("--device", default="cpu", choices=["cpu", "mps", "cuda"])
     p.add_argument("--out", default="results")
     args = p.parse_args()
 
@@ -119,7 +145,7 @@ def main():
     device = args.device
     print(f"loading {args.model} on {device} ...")
     tokenizer = AutoTokenizer.from_pretrained(args.model)
-    dtype = torch.float32 if device == "cpu" else torch.bfloat16
+    dtype = torch.bfloat16 if device == "cuda" else torch.float32
     model = AutoModelForCausalLM.from_pretrained(
         args.model, dtype=dtype,
         attn_implementation="eager").to(device).eval()

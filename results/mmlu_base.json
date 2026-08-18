@@ -1,0 +1,6 @@
+{
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "adapter": null,
+  "n": 400,
+  "mmlu_acc": 0.6775
+}
