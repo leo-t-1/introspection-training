@@ -90,10 +90,10 @@ is the delta.
 
 ## TRAINING RESULT: introspection is trainable and generalizes
 2026-08-17 · Qwen2.5-7B + LoRA (r=16, all proj) · 3000 trials, 1 epoch ·
-A100 (cambria-tremont) · eval on 50 held-out concepts never seen in training
+A100 80GB · eval on 50 held-out concepts never seen in training
 (200 injected + 10 clean + 25 prompt-mention trials, greedy decoding).
 Files: `results/metrics_{base,trained}.json`, `results/eval_{base,trained}.jsonl`.
-Adapter: `cambria-tremont:~/introspection/adapters/introspect-lora`.
+Adapter: the v0.1-adapter GitHub release.
 
 | Metric (held-out concepts) | Base | Trained |
 |---|---|---|
@@ -128,7 +128,7 @@ probe; single seed, no CIs yet.
 
 # Earlier pilots — concept-injection baseline
 
-## Qwen2.5-7B-Instruct · A100 (cambria-tremont) · bf16 · layer 18/28
+## Qwen2.5-7B-Instruct · A100 80GB · bf16 · layer 18/28
 2026-08-17 · typical residual norm 87.6 · transcripts `results/7b_*.jsonl`
 
 **~3 genuine hits / 24 injected trials (~12%)**, up from ~4% at 1.5B —

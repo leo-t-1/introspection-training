@@ -1,0 +1,6 @@
+torch>=2.4
+transformers>=4.50
+accelerate
+peft
+datasets
+huggingface_hub
